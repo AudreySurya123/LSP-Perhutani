@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdCardController;
+use App\Http\Controllers\SkemaController;
+use App\Http\Controllers\UnitKompetensiController;
+use App\Http\Controllers\ElemenController;
 
 // Halaman login
 Route::get('/', function () {
@@ -39,6 +42,10 @@ Route::get('/dashboard-asesi', function () {
 Route::get('/dashboard-asesor', function () {
     return view('pages.asesor.dashboard');
 })->name('asesor.dashboard');
+
+Route::get('/dashboard-adminasesi', function () {
+    return view('pages.adminasesi.dashboard');
+})->name('adminasesi.dashboard');
 
 // Halaman Edit Info LSP
 Route::get('/info-lsp', function () {
@@ -124,9 +131,40 @@ Route::get('/lainnya/surveillen', function () {
 });
 
 // Halaman Daftar Skema
-Route::get('/lainnya/daftar-skema', function () {
-    return view('pages.admin.daftar_skema');
-})->name('daftar.skema');
+Route::get('/lainnya/daftar-skema', [SkemaController::class, 'index'])
+    ->name('skema.index');
+
+Route::get('/lainnya/skema/tambah', function () {
+    return view('pages.admin.tambah_skema');
+})->name('tambah.skema');
+
+Route::prefix('admin')->middleware('auth')->group(function () {
+    Route::get('/skema', [SkemaController::class, 'index'])->name('skema.index');
+    Route::get('/skema/tambah', [SkemaController::class, 'create'])->name('skema.create');
+    Route::post('/skema/store', [SkemaController::class, 'store'])->name('skema.store');
+    Route::get('/skema/edit/{id}', [SkemaController::class, 'edit'])->name('skema.edit');
+    Route::put('/skema/update/{id}', [SkemaController::class, 'update'])->name('skema.update');
+    Route::delete('/skema/delete/{id}', [SkemaController::class, 'destroy'])->name('skema.destroy');
+});
+
+Route::prefix('skema')->group(function () {
+    Route::get('{skema}/unit', [UnitKompetensiController::class, 'index'])->name('unit.index');
+    Route::get('{skema}/unit/create', [UnitKompetensiController::class, 'create'])->name('unit.create');
+    Route::post('{skema}/unit', [UnitKompetensiController::class, 'store'])->name('unit.store');
+    Route::get('{skema}/unit/{id}/edit', [UnitKompetensiController::class, 'edit'])->name('unit.edit');
+    Route::put('{skema}/unit/{id}', [UnitKompetensiController::class, 'update'])->name('unit.update');
+    Route::delete('{skema}/unit/{id}', [UnitKompetensiController::class, 'destroy'])->name('unit.destroy');
+});
+
+// Routes untuk Elemen
+Route::prefix('skema/{skema_id}/unit/{unit_id}')->group(function () {
+    Route::get('elemen', [ElemenController::class, 'edit'])->name('elemen.edit'); // Ganti dari index ke edit
+    Route::post('elemen', [ElemenController::class, 'store'])->name('elemen.store');
+    Route::put('elemen', [ElemenController::class, 'update'])->name('elemen.update');
+    Route::delete('elemen/{elemen_id}', [ElemenController::class, 'destroy'])->name('elemen.destroy');
+});
+
+
 
 // Lihat Log
 Route::get('/lainnya/lihat-log', function () {
@@ -210,3 +248,41 @@ Route::view('/lapkeg', 'pages.asesor.laporan_kegiatan')
 
 Route::view('/pemegang-sertif', 'pages.asesor.pemegang_sertifikat')
     ->name('pemegang-sertif');
+
+Route::get('/admin/akses-asesi/{id}', function ($id) {
+    session([
+        'akses_sebagai' => 'asesi',
+        'akses_asesi_id' => $id,
+    ]);
+
+    return redirect('/dashboard-adminasesi');
+})->middleware('auth')->name('admin.akses.asesi');
+
+Route::get('/admin/keluar-akses', function () {
+    session()->forget(['akses_sebagai', 'akses_asesi_id']);
+    return redirect('/dashboard-admin');
+})->middleware('auth')->name('admin.keluar.akses');
+
+Route::get('/asesi/edit-skema', function () {
+    return view('pages.adminasesi.edit_skema');
+})->middleware('auth')->name('pages.adminasesi.edit_skema');
+
+Route::get('/asesi/metode', function () {
+    return view('pages.adminasesi.metode_pembayaran');
+})->middleware('auth')->name('pages.adminasesi.metode_pembayaran');
+
+Route::get('/asesi/apl01', function () {
+    return view('pages.adminasesi.apl01');
+})->middleware('auth')->name('pages.adminasesi.apl01');
+
+Route::get('/asesi/apl02', function () {
+    return view('pages.adminasesi.apl02');
+})->middleware('auth')->name('pages.adminasesi.apl02');
+
+Route::get('/asesi/asetuk', function () {
+    return view('pages.adminasesi.pilih_asetuk');
+})->middleware('auth')->name('pages.adminasesi.pilih_asetuk');
+
+Route::get('/asesi/idcard', function () {
+    return view('pages.adminasesi.idcard');
+})->middleware('auth')->name('pages.adminasesi.idcard');

@@ -98,21 +98,29 @@ class AuthController extends Controller
     // Logout
     public function logout(Request $request)
     {
-        $role = optional(Auth::user())->role ?? 'admin'; // ambil role sebelum logout
+        // Ambil role sebelum logout
+        $role = optional(Auth::user())->role ?? 'admin';
 
+        // HAPUS MODE ADMIN AKSES ASESI (INI KUNCI UTAMA)
+        $request->session()->forget([
+            'akses_sebagai',
+            'akses_asesi_id',
+        ]);
+
+        // Logout user
         Auth::logout();
-        $request->session()->forget('user');
+
+        // Amankan session
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         // Redirect sesuai role
-        switch ($role) {
-            case 'asesi':
-                return redirect()->route('loginasesi');   // route login asesi
-            case 'admin':
-                return redirect()->route('loginadmin'); // route login admin
-            case 'asesor':
-                return redirect()->route('loginasesor'); // jika ada route login asesor
-            default:
-                return redirect('/'); // fallback
-        }
+        return match ($role) {
+            'asesi' => redirect()->route('loginasesi'),
+            'admin' => redirect()->route('loginadmin'),
+            'asesor' => redirect()->route('loginasesor'),
+            default => redirect('/'),
+        };
     }
+
 }

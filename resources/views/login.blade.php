@@ -42,7 +42,7 @@
                         required>
                 </div>
 
-                <button type="submit" name="cari" value="1"
+                <button type="button" id="cariButton"
                     class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition text-sm">
                     Cari Data
                 </button>
@@ -129,3 +129,21 @@
 </body>
 
 </html>
+
+<script>
+    document.getElementById('cariButton').addEventListener('click', function () {
+        const form = this.closest('form');
+        const inputNik = form.querySelector('input[name="nik"]').value;
+        if (inputNik.trim() === '') {
+            alert('Masukkan NIK terlebih dahulu!');
+            return;
+        }
+        // buat hidden input untuk menandai "Cari Data"
+        let hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'cari';
+        hidden.value = '1';
+        form.appendChild(hidden);
+        form.submit();
+    });
+</script>

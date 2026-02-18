@@ -1,4 +1,5 @@
-<header class="bg-linear-to-r from-white to-gray-50 shadow-lg px-6 py-4 flex justify-between items-center border-b border-gray-100">
+<header
+    class="bg-linear-to-r from-white to-gray-50 shadow-lg px-6 py-4 flex justify-between items-center border-b border-gray-100">
     <!-- Left Section: Toggle & Breadcrumb -->
     <div class="flex items-center gap-4">
         <!-- Hamburger Mobile -->
@@ -11,39 +12,24 @@
         <div class="hidden md:block">
             <div class="flex items-center gap-2">
                 @php
-                    $user = Auth::user();
-                    $role = $user->role ?? 'guest';
+                    // User yang login
+                    $loginUser = Auth::user();
 
-                    // Define all color mappings
+                    // Jika admin akses asesi, tampilkan info asesi
+                    if (session('akses_asesi_id')) {
+                        $user = \App\Models\User::find(session('akses_asesi_id'));
+                        $role = $user->role ?? 'guest';
+                    } else {
+                        $user = $loginUser;
+                        $role = $loginUser->role ?? 'guest';
+                    }
+
+                    // Konfigurasi warna dan label
                     $roleConfig = [
-                        'admin' => [
-                            'text' => 'blue',
-                            'status' => 'green',
-                            'icon' => 'shield',
-                            'label' => 'Administrator',
-                            'panel' => 'Admin Panel'
-                        ],
-                        'asesi' => [
-                            'text' => 'green',
-                            'status' => 'blue',
-                            'icon' => 'user',
-                            'label' => 'Asesi',
-                            'panel' => 'Asesi Panel'
-                        ],
-                        'asesor' => [
-                            'text' => 'yellow',
-                            'status' => 'yellow',
-                            'icon' => 'award',
-                            'label' => 'Assessor',
-                            'panel' => 'Assessor Panel'
-                        ],
-                        'guest' => [
-                            'text' => 'gray',
-                            'status' => 'gray',
-                            'icon' => 'user',
-                            'label' => 'Guest',
-                            'panel' => 'Guest Panel'
-                        ]
+                        'admin' => ['text' => 'blue', 'status' => 'green', 'icon' => 'shield', 'label' => 'Administrator', 'panel' => 'Admin Panel'],
+                        'asesi' => ['text' => 'green', 'status' => 'blue', 'icon' => 'user', 'label' => 'Asesi', 'panel' => 'Asesi Panel'],
+                        'asesor' => ['text' => 'yellow', 'status' => 'yellow', 'icon' => 'award', 'label' => 'Assessor', 'panel' => 'Assessor Panel'],
+                        'guest' => ['text' => 'gray', 'status' => 'gray', 'icon' => 'user', 'label' => 'Guest', 'panel' => 'Guest Panel'],
                     ];
 
                     $config = $roleConfig[$role] ?? $roleConfig['guest'];
@@ -53,6 +39,7 @@
                     $label = $config['label'];
                     $panel = $config['panel'];
                 @endphp
+
                 <span class="text-sm font-medium text-{{ $textColor }}-600">
                     {{ $panel }}
                 </span>
@@ -79,7 +66,8 @@
             <button class="p-2 rounded-xl bg-linear-to-br from-gray-50 to-gray-100
                     hover:from-gray-100 hover:to-gray-200 transition-all duration-300 shadow-sm hover:shadow-md group">
                 <i data-lucide="bell" class="w-5 h-5 text-gray-600 group-hover:text-blue-600"></i>
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">5</span>
+                <span
+                    class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">5</span>
             </button>
         </div>
 
@@ -88,7 +76,8 @@
             <button class="p-2 rounded-xl bg-linear-to-br from-gray-50 to-gray-100
                     hover:from-gray-100 hover:to-gray-200 transition-all duration-300 shadow-sm hover:shadow-md group">
                 <i data-lucide="message-square" class="w-5 h-5 text-gray-600 group-hover:text-green-600"></i>
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
+                <span
+                    class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
             </button>
         </div>
 
@@ -111,30 +100,27 @@
             <div class="relative">
                 <button @click="open = !open" class="focus:outline-none">
                     <div class="relative group">
-                        <img id="profile-avatar"
-                             src="{{ $user->avatar ?? asset('images/default.png') }}"
-                             class="w-11 h-11 rounded-full border-2 border-{{ $textColor }}-300 shadow-lg object-cover hover:scale-105 transition-transform duration-300"
-                             alt="User Avatar">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-{{ $statusColor }}-500 rounded-full border-2 border-white"></div>
+                        <img id="profile-avatar" src="{{ $user->avatar ?? asset('images/default.png') }}"
+                            class="w-11 h-11 rounded-full border-2 border-{{ $textColor }}-300 shadow-lg object-cover hover:scale-105 transition-transform duration-300"
+                            alt="User Avatar">
+                        <div
+                            class="absolute bottom-0 right-0 w-3 h-3 bg-{{ $statusColor }}-500 rounded-full border-2 border-white">
+                        </div>
                     </div>
                 </button>
 
                 <!-- Dropdown Menu -->
-                <div x-show="open"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-95"
-                     @click.away="open = false"
-                     class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    @click.away="open = false"
+                    class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
 
                     <!-- User Info Card -->
                     <div class="p-4 bg-linear-to-r from-{{ $textColor }}-50 to-{{ $textColor }}-100">
                         <div class="flex items-center gap-3">
-                            <img
-                                src="{{ $user->avatar ?? asset('images/default.png') }}"
+                            <img src="{{ $user->avatar ?? asset('images/default.png') }}"
                                 class="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover aspect-square"
                                 alt="Avatar">
 
@@ -165,19 +151,19 @@
                     <!-- Dropdown Items -->
                     <div class="py-2">
                         <a href="/profile"
-                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
                             <i data-lucide="user" class="w-4 h-4 text-gray-500 group-hover:text-blue-500"></i>
                             <span>Profil Saya</span>
                         </a>
 
                         <a href="/settings"
-                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
                             <i data-lucide="settings" class="w-4 h-4 text-gray-500 group-hover:text-green-500"></i>
                             <span>Pengaturan</span>
                         </a>
 
                         <a href="/help"
-                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group">
                             <i data-lucide="help-circle" class="w-4 h-4 text-gray-500 group-hover:text-purple-500"></i>
                             <span>Bantuan</span>
                         </a>
@@ -187,7 +173,7 @@
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit"
-                                    class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group">
+                                class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group">
                                 <i data-lucide="log-out" class="w-4 h-4 group-hover:rotate-90 transition-transform"></i>
                                 <span>Keluar</span>
                             </button>
@@ -209,7 +195,7 @@
 
 <script>
     // Toggle mobile sidebar
-    document.getElementById('menu-toggle')?.addEventListener('click', function() {
+    document.getElementById('menu-toggle')?.addEventListener('click', function () {
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
             sidebar.classList.toggle('-translate-x-full');
@@ -217,7 +203,7 @@
     });
 
     // Close sidebar when clicking menu-close
-    document.getElementById('menu-close')?.addEventListener('click', function() {
+    document.getElementById('menu-close')?.addEventListener('click', function () {
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
             sidebar.classList.add('-translate-x-full');
@@ -227,7 +213,7 @@
     // Optional: Add click outside to close dropdown (already handled by Alpine.js)
     // But keep this for non-Alpine environments
     if (!window.Alpine) {
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const avatar = document.querySelector('[x-data] button');
             const dropdown = document.querySelector('[x-show]');
 
